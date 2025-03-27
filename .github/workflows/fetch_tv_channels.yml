@@ -1,4 +1,4 @@
-name: Fetch TV Channels Data
+name: Fetch TV Channels Data (Raw Text)
 
 on:
   schedule:
@@ -19,13 +19,14 @@ jobs:
             -H "Authorization: ${{ secrets.BASIC_AUTH }}" \
             -H "Accept-Encoding: gzip" \
             -H "User-Agent: okhttp/4.9.0" \
-            -o tv_channels.json
+            --compressed \
+            -o tv_channels.txt  # Save as raw text
 
       - name: Commit and Push Data
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          git add tv_channels.json
+          git add tv_channels.txt
           git commit -m "Updated TV channels data [$(date)]" || echo "No changes to commit"
           git push
