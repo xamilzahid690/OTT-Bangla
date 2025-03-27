@@ -1,0 +1,31 @@
+name: Fetch TV Channels Data
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Runs every hour
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  fetch-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Fetch TV Channels Data
+        run: |
+          curl -X GET "https://otapp.store/rest-api/v130/all_tv_channel_by_category" \
+            -H "api-key: ${{ secrets.API_KEY }}" \
+            -H "Authorization: ${{ secrets.BASIC_AUTH }}" \
+            -H "Accept-Encoding: gzip" \
+            -H "User-Agent: okhttp/4.9.0" \
+            -o tv_channels.json
+
+      - name: Commit and Push Data
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add tv_channels.json
+          git commit -m "Updated TV channels data [$(date)]" || echo "No changes to commit"
+          git push
