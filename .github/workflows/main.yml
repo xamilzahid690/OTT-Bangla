@@ -18,15 +18,22 @@ jobs:
 
       - name: Fetch JSON Data
         run: |
-          curl -L -o ott_bangla.json "https://raw.githubusercontent.com/xamilzahid690/OTT-Bangla/refs/heads/main/ott%20bangla.txt"
+          curl -L -o ott_bangla.json "https://raw.githubusercontent.com/xamilzahid690/OTT-Bangla/main/ott%20bangla.txt"
+
+      - name: Validate JSON File
+        run: |
+          if ! jq empty ott_bangla.json; then
+            echo "Invalid JSON format! Fix it before running again."
+            exit 1
+          fi
 
       - name: Convert JSON to M3U
         run: |
           echo "#EXTM3U" > "OTT Bangla By Kobir.m3u"
-          cat ott_bangla.json | jq -r '
+          jq -r '
             .[] | .channels[] | 
-            "#EXTINF:-1 group-title=\"" + .title + "\" tvg-logo=\"" + (.poster_url // .thumbnail_url) + "\", " + .tv_name + "\n" + .stream_url
-          ' >> "OTT Bangla By Kobir.m3u"
+            "#EXTINF:-1 group-title=\"" + (.title // "Unknown") + "\" tvg-logo=\"" + (.poster_url // .thumbnail_url // "") + "\", " + (.tv_name // "Unknown") + "\n" + (.stream_url // "")
+          ' ott_bangla.json >> "OTT Bangla By Kobir.m3u"
 
       - name: Commit & Push Changes
         run: |
